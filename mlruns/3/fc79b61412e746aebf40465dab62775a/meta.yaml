@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/lucabem/Desktop/master_docs/14_TFM/mlruns/3/fc79b61412e746aebf40465dab62775a/artifacts
+end_time: 1626709585169
+entry_point_name: ''
+experiment_id: '3'
+lifecycle_stage: active
+name: ''
+run_id: fc79b61412e746aebf40465dab62775a
+run_uuid: fc79b61412e746aebf40465dab62775a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1626709584862
+status: 3
+tags: []
+user_id: lucabem
