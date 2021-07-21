@@ -15,41 +15,6 @@ columns = ["Date",
            "Energy_To_Battery", "Energy_To_Grid",
            "PV_Production"]
 
-
-def load_cleaned_data():
-    path_nan_rows = "CononsythFarm/Raw_data/15minutes_Full/raw_data_without_nan_rows.xlsx"
-    if not os.path.exists(path_nan_rows):
-        path_empty_columns = "CononsythFarm/Raw_data/15minutes_Full/raw_data_without_empty_columns.xlsx"
-        if not os.path.exists(path_empty_columns):
-            path = "CononsythFarm/Raw_data/15minutes_Full/full_raw_data.xlsx"
-            if not os.path.exists(path):
-                print(get_current_time(), "- Creating full raw dataset...")
-                dataset = load_datasets_15mnts()
-                print(get_current_time(), "- Done!")
-            else:
-                print(get_current_time(), "- Loading raw dataset exists on disk...\nLoading...")
-                dataset = pd.read_excel(io=path,
-                                        names=columns)
-                print(get_current_time(), "- Loaded!")
-
-            print(get_current_time(), "- Removing columns with all values NaN...")
-            dataset = remove_empty_columns(dataset)
-            print(get_current_time(), "- Done!")
-        else:
-            print(get_current_time(), "- Dataset without empty columns exists on disk...\nLoading...")
-            dataset = pd.read_excel(io=path_empty_columns)
-            print(get_current_time(), "- Loaded!")
-        print(get_current_time(), "- Removing rows with all values NaN...")
-        dataset = remove_empty_rows(dataset)
-        print(get_current_time(), "- Done!")
-    else:
-        print(get_current_time(), "- Loading dataset without empty rows exists on disk...")
-        dataset = pd.read_excel(io=path_nan_rows)
-        print(get_current_time(), "- Loaded!")
-
-    return remove_zeros_rows(remove_nan_rows(dataset))
-
-
 def load_datasets_15mnts():
     data_files = os.listdir("CononsythFarm/Raw_data/North_Mains_Solar_15minutes")
     list_data = []
@@ -109,7 +74,47 @@ def remove_zeros_rows(dataset):
     return dataset.loc[(dataset[dataset.columns[1:]] != 0).all(axis=1)]
 
 
+def load_cleaned_data():
+    path_nan_rows = "CononsythFarm/Raw_data/15minutes_Full/raw_data_without_nan_rows.xlsx"
+    if not os.path.exists(path_nan_rows):
+        path_empty_columns = "CononsythFarm/Raw_data/15minutes_Full/raw_data_without_empty_columns.xlsx"
+        if not os.path.exists(path_empty_columns):
+            path = "CononsythFarm/Raw_data/15minutes_Full/full_raw_data.xlsx"
+            if not os.path.exists(path):
+                print(get_current_time(), "- Creating full raw dataset...")
+                dataset = load_datasets_15mnts()
+                print(get_current_time(), "- Done!")
+            else:
+                print(get_current_time(), "- Loading raw dataset exists on disk...\nLoading...")
+                dataset = pd.read_excel(io=path,
+                                        names=columns)
+                print(get_current_time(), "- Loaded!")
+
+            print(get_current_time(), "- Removing columns with all values NaN...")
+            dataset = remove_empty_columns(dataset)
+            print(get_current_time(), "- Done!")
+        else:
+            print(get_current_time(), "- Dataset without empty columns exists on disk...\nLoading...")
+            dataset = pd.read_excel(io=path_empty_columns)
+            print(get_current_time(), "- Loaded!")
+        print(get_current_time(), "- Removing rows with all values NaN...")
+        dataset = remove_empty_rows(dataset)
+        print(get_current_time(), "- Done!")
+    else:
+        print(get_current_time(), "- Loading dataset without empty rows exists on disk...")
+        dataset = pd.read_excel(io=path_nan_rows)
+        print(get_current_time(), "- Loaded!")
+
+    return remove_zeros_rows(remove_nan_rows(dataset))
+
+
 def scale_data(dataset, columns):
     scaler = StandardScaler()
     scaler.fit(dataset[columns].values)
     return scaler.transform(dataset[columns].values)
+
+
+def split_data(dataset, year=2017):
+    data_datetime = dataset.set_index(dataset['Date'])
+    data_datetime = data_datetime.sort_index()
+    return data_datetime.loc[data_datetime["Date"] < "2017-01-01"], data_datetime.loc['2017-01-01':'2017-12-31']

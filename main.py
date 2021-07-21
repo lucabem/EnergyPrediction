@@ -1,12 +1,12 @@
 import logging
 import warnings
 
-import mlflow
 import numpy as np
 from mlflow.tracking import MlflowClient
 
-from models.elasticnet_mlflow import run_elasticnet, run_elasticnet_cv
-from models.knn_mflow import run_knn, run_knn_cv
+from models.dt_mlflow import run_dt
+from models.elasticnet_mlflow import run_elasticnet
+from models.knn_mflow import run_knn
 from models.lightgbm_mlflow import run_lgbm
 from preprocess.utils import *
 
@@ -19,6 +19,8 @@ if __name__ == "__main__":
     np.random.seed(2021)
 
     data = load_cleaned_data()
+
+    train, test = split_data(data)
 
     client = MlflowClient()
 
@@ -34,7 +36,7 @@ if __name__ == "__main__":
         }
 
         run_elasticnet(experiment_id=experiment_elasticnet,
-                       dataset=data,
+                       dataset=train,
                        params=params)
     else:
         print("Already")
@@ -45,7 +47,7 @@ if __name__ == "__main__":
         except:
             experiment_knn = client.get_experiment_by_name("KNN").experiment_id
         run_knn(experiment_id=experiment_knn,
-                dataset=data)
+                dataset=train)
     else:
         print("Already exists")
 
@@ -55,6 +57,16 @@ if __name__ == "__main__":
         except:
             experiment_lgbm = client.get_experiment_by_name("LGBM").experiment_id
         run_lgbm(experiment_id=experiment_lgbm,
-                 dataset=data)
+                 dataset=train)
+    else:
+        print("Hey")
+
+    if not os.path.isdir('mlruns/4'):
+        try:
+            experiment_dt = client.create_experiment("DT")
+        except:
+            experiment_dt = client.get_experiment_by_name("DT").experiment_id
+        run_dt(experiment_id=experiment_dt,
+               dataset=train)
     else:
         print("Hey")
