@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 from datetime import datetime
-
+from utils.constants import X
 from sklearn.preprocessing import StandardScaler
 
 columns = ["Date",
@@ -108,7 +108,7 @@ def load_cleaned_data():
     return remove_zeros_rows(remove_nan_rows(dataset))
 
 
-def scale_data(dataset, columns):
+def scale_data(dataset, columns=X):
     scaler = StandardScaler()
     scaler.fit(dataset[columns].values)
     return scaler.transform(dataset[columns].values)

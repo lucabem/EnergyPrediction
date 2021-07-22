@@ -44,6 +44,8 @@ def run_elasticnet(experiment_id, dataset, params=None):
                 mlflow.log_metric("r2", r2)
                 mlflow.log_metric("mae", mae)
 
+                mlflow.sklearn.log_model(lr, "model")
+
     print(get_current_time(), "- Ended ElasticNet Model...")
 
 

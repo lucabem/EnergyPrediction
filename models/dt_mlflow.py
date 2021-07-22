@@ -66,6 +66,8 @@ def run_dt(experiment_id, dataset, params=None):
                                 "mae": mae
                             })
 
+                            mlflow.sklearn.log_model(model, "model")
+
                             cont += 1
 
     print(get_current_time(), "- Ended DT Model...")

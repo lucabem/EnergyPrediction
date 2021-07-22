@@ -57,4 +57,6 @@ def run_lgbm(experiment_id, dataset, params=None):
                         mlflow.log_metric("r2", r2)
                         mlflow.log_metric("mae", mae)
 
+                        mlflow.sklearn.log_model(model, "model")
+
     print(get_current_time(), "- Ended LGBM Model...")

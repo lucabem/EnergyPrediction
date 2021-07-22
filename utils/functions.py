@@ -1,9 +1,45 @@
+import mlflow
 import numpy as np
+import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split, RepeatedKFold
 
 from preprocess.utils import scale_data
 from utils.constants import X
+
+import matplotlib.pyplot as plt
+
+
+def print_test_errors(data, method):
+    plt.plot(data['Real'],
+             color='red',
+             label='Real PV Production')
+    plt.plot(data['Pred'],
+             color='blue',
+             label='Pred PV Production')
+
+    plt.title('PV Prediction over 2017 with' + method)
+    plt.xlabel('Time')
+    plt.ylabel('PV Production')
+    plt.legend()
+    plt.savefig('graphs/prediction_2017_' + method)
+    plt.close()
+
+
+def test_best_model(experiment_id, test_data, metric='rmse', label_column='PV_Production'):
+    test_data = test_data.drop(columns=['Energy', 'Date'])
+
+    df = mlflow.search_runs(experiment_ids=[experiment_id],
+                            filter_string="metrics.rmse < 400")
+    run_id = df.loc[df['metrics.rmse'].idxmin()]['run_id']
+    model = mlflow.sklearn.load_model("runs:/" + run_id + "/model")
+
+    test_x = test_data[X]
+    test_y = test_data[label_column]
+
+    test_data_scaled = scale_data(test_x)
+
+    return test_y, model.predict(test_data_scaled)
 
 
 def train_test(dataset, label_column='PV_Production', train_percentage=0.75):
@@ -53,3 +89,12 @@ def train_cv(model, dataset, label_column='PV_Production', num_folds=10, num_bag
     (rmse, mae, r2) = eval_metrics(y_tot, preds_val_mean)
 
     return rmse, mae, r2
+
+
+def save_best_params(experiment_id, nrows=20):
+    data = mlflow.search_runs(experiment_ids=[experiment_id],
+                              max_results=nrows,
+                              order_by=['metric.rmse ASC'])
+    df = pd.DataFrame(data=data)
+    df.to_csv("modelInfo/" + experiment_id + '.csv')
+    return data

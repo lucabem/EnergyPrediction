@@ -19,7 +19,7 @@ def run_knn(experiment_id, dataset, params=None):
     test_x = scale_data(test_x, columns=X)
 
     if params is None:
-        n_neighbors = [i for i in np.arange(5, 102, 2)]
+        n_neighbors = [i for i in np.arange(3, 40, 1)]
         weights = ['uniform', 'distance']
     else:
         n_neighbors = params['n_neighbors']
@@ -48,6 +48,8 @@ def run_knn(experiment_id, dataset, params=None):
                 mlflow.log_metric("r2", r2)
                 mlflow.log_metric("mae", mae)
 
+                mlflow.sklearn.log_model(model, "model")
+
     print(get_current_time(), "- Ended KNN Model...")
 
 
@@ -55,7 +57,7 @@ def run_knn_cv(experiment_id, dataset, params=None):
     print(get_current_time(), "- Starting KNN CV Model...")
 
     if params is None:
-        n_neighbors = [i for i in np.arange(5, 102, 2)]
+        n_neighbors = [i for i in np.arange(3, 40, 1)]
         weights = ['uniform', 'distance']
     else:
         n_neighbors = params['n_neighbors']
