@@ -1,3 +1,5 @@
+import logging
+
 import mlflow
 import numpy as np
 import pandas as pd
@@ -10,7 +12,29 @@ from utils.constants import X
 import matplotlib.pyplot as plt
 
 
-def print_test_errors(data, method):
+def plot_frecuencies(data, method):
+    data['Date'] = pd.to_datetime(data['Date'])
+
+    daily_mean = data.groupby(pd.Grouper(key='Date',
+                                         freq='1D')).mean()
+    print_test_errors(data=daily_mean,
+                      method=method,
+                      frecuency='daily')
+
+    weekly_mean = data.groupby(pd.Grouper(key='Date',
+                                          freq='7D')).mean()
+    print_test_errors(data=weekly_mean,
+                      method=method,
+                      frecuency='weekly')
+
+    monthly_mean = data.groupby(pd.Grouper(key='Date',
+                                           freq='1M')).mean()
+    print_test_errors(data=monthly_mean,
+                      method=method,
+                      frecuency='monthly')
+
+
+def print_test_errors(data, method, frecuency='15mins'):
     plt.plot(data['Real'],
              color='red',
              label='Real PV Production')
@@ -18,11 +42,11 @@ def print_test_errors(data, method):
              color='blue',
              label='Pred PV Production')
 
-    plt.title('PV Prediction over 2017 with' + method)
+    plt.title('PV Prediction over 2017 with ' + method)
     plt.xlabel('Time')
-    plt.ylabel('PV Production')
+    plt.ylabel('PV Production ' + frecuency)
     plt.legend()
-    plt.savefig('graphs/prediction_2017_' + method)
+    plt.savefig('graphs/' + frecuency + '/prediction_2017_' + method)
     plt.close()
 
 
