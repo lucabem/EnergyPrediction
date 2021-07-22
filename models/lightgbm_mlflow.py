@@ -1,5 +1,4 @@
 import mlflow
-import numpy as np
 
 from utils.constants import X
 from lightgbm import LGBMRegressor

@@ -1,4 +1,3 @@
-import logging
 import warnings
 
 import numpy as np
@@ -8,6 +7,7 @@ from models.dt_mlflow import run_dt
 from models.elasticnet_mlflow import run_elasticnet
 from models.knn_mflow import run_knn
 from models.lightgbm_mlflow import run_lgbm
+from models.xgb_mlflow import run_xgb
 from preprocess.utils import *
 from utils.functions import test_best_model, print_test_errors, eval_metrics, save_best_params, plot_frecuencies
 
@@ -17,13 +17,12 @@ if __name__ == "__main__":
     np.random.seed(2021)
 
     trainmodels = False
+
+    data = load_cleaned_data()
+    train, test = split_data(data)
+    client = MlflowClient()
+
     if trainmodels:
-        data = load_cleaned_data()
-
-        train, test = split_data(data)
-
-        client = MlflowClient()
-
         try:
             experiment_elasticnet = client.create_experiment("ElasticNet")
         except:
@@ -125,15 +124,36 @@ if __name__ == "__main__":
         print(get_current_time(), "- Metrica RMSE DT Test", rmse)
         print(get_current_time(), "- Saved results of DT to CSV")
         data.to_csv('predictions/dt_2017.csv')
-    else:
-        print(get_current_time(), '- No Models Trained. Using CSV predictions...')
 
-        models = os.listdir('predictions/15mins')
-        name_models = [name.split('_')[0] for name in models]
+    try:
+        experiment_xgb = client.create_experiment("XGB")
+    except:
+        experiment_xgb = client.get_experiment_by_name("XGB").experiment_id
+    run_xgb(experiment_id=experiment_xgb,
+            dataset=train)
+    real, predictions = test_best_model(experiment_xgb, test)
 
-        for model in models:
-            path = 'predictions/15mins/' + model
-            data = pd.read_csv(path)
-            data = data.drop(columns=['Date.1'])
-            plot_frecuencies(data=data,
-                             method=name_models[models.index(model)])
+    data = pd.DataFrame(data={
+        'Date': test['Date'],
+        'Real': real,
+        'Pred': predictions
+    })
+
+    print_test_errors(data,
+                      method='XGB')
+    (rmse, mae, r2) = eval_metrics(real, predictions)
+
+    print(get_current_time(), "- Metrica RMSE XGB Test", rmse)
+    print(get_current_time(), "- Saved results of XGB to CSV")
+    data.to_csv('predictions/xgb_2017.csv')
+
+    models = os.listdir('predictions/15mins')
+    name_models = [name.split('_')[0] for name in models]
+
+    print(get_current_time(), '- Plotting predictions..')
+    for model in models:
+        path = 'predictions/15mins/' + model
+        data = pd.read_csv(path)
+        data = data.drop(columns=['Date.1'])
+        plot_frecuencies(data=data,
+                         method=name_models[models.index(model)])
