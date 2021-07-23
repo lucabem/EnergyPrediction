@@ -10,7 +10,7 @@ from utils.functions import train_test, eval_metrics, train_cv
 from utils.constants import X
 
 
-def run_knn(experiment_id, dataset, params=None):
+def run_knn(experiment_id, dataset, params=None, verbose=False):
     print(get_current_time(), "- Starting KNN Model...")
 
     train_x, test_x, train_y, test_y = train_test(dataset)
@@ -48,12 +48,16 @@ def run_knn(experiment_id, dataset, params=None):
                 mlflow.log_metric("r2", r2)
                 mlflow.log_metric("mae", mae)
 
+                if verbose:
+                    print(get_current_time(), "- [n_neighbor={} , weight={}] - [mae={:.3f}, rmse={:.3f},"
+                                              " r2={:.3f}]".format(n_neighbor, weight, mae, rmse, r2))
+
                 mlflow.sklearn.log_model(model, "model")
 
     print(get_current_time(), "- Ended KNN Model...")
 
 
-def run_knn_cv(experiment_id, dataset, params=None):
+def run_knn_cv(experiment_id, dataset, params=None, verbose=False):
     print(get_current_time(), "- Starting KNN CV Model...")
 
     if params is None:
@@ -82,5 +86,9 @@ def run_knn_cv(experiment_id, dataset, params=None):
                 mlflow.log_metric("rmse", rmse)
                 mlflow.log_metric("r2", r2)
                 mlflow.log_metric("mae", mae)
+
+                if verbose:
+                    print(get_current_time(), "- [n_neighbor={} , weight={}] - [mae={:.3f}, rmse={:.3f},"
+                                              " r2={:.3f}]".format(n_neighbor, weight, mae, rmse, r2))
 
     print(get_current_time(), "- Ended KNN CV Model...")

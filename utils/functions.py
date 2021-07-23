@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split, RepeatedKFold
 
-from preprocess.utils import scale_data
+from preprocess.utils import scale_data, get_current_time
 from utils.constants import X
 
 import matplotlib.pyplot as plt
@@ -62,6 +62,8 @@ def test_best_model(experiment_id, test_data, metric='rmse', label_column='PV_Pr
     test_y = test_data[label_column]
 
     test_data_scaled = scale_data(test_x)
+
+    print(get_current_time(), "- Making predictions for test data...")
 
     return test_y, model.predict(test_data_scaled)
 

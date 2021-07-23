@@ -3,6 +3,7 @@ import warnings
 import numpy as np
 from mlflow.tracking import MlflowClient
 
+from models.ann_mlflow import run_mlp
 from models.dt_mlflow import run_dt
 from models.elasticnet_mlflow import run_elasticnet
 from models.knn_mflow import run_knn
@@ -51,7 +52,7 @@ if __name__ == "__main__":
                           method='ElasticNet')
         (rmse, mae, r2) = eval_metrics(real, predictions)
 
-        print(get_current_time(), "- Metrica RMSE Test", rmse)
+        print(get_current_time(), "- Score RMSE Test -", rmse)
         data.to_csv('predictions/elasticNet_2017.csv')
         print(get_current_time(), "- Saved results of ElasticNet to CSV")
 
@@ -76,7 +77,7 @@ if __name__ == "__main__":
                           method='KNN')
         (rmse, mae, r2) = eval_metrics(real, predictions)
 
-        print(get_current_time(), "- Metrica RMSE KNN Test", rmse)
+        print(get_current_time(), "- Score RMSE KNN Test -", rmse)
         data.to_csv('predictions/KNN_2017.csv')
         print(get_current_time(), "- Saved results of KNN to CSV")
 
@@ -99,7 +100,7 @@ if __name__ == "__main__":
                           method='LGBM')
         (rmse, mae, r2) = eval_metrics(real, predictions)
 
-        print(get_current_time(), "- Metrica RMSE LGBM Test", rmse)
+        print(get_current_time(), "- Score RMSE LGBM Test -", rmse)
         data.to_csv('predictions/LGBM_2017.csv')
         print(get_current_time(), "- Saved results of LGBM to CSV")
 
@@ -121,17 +122,40 @@ if __name__ == "__main__":
                           method='DT')
         (rmse, mae, r2) = eval_metrics(real, predictions)
 
-        print(get_current_time(), "- Metrica RMSE DT Test", rmse)
+        print(get_current_time(), "- Score RMSE DT Test -", rmse)
         print(get_current_time(), "- Saved results of DT to CSV")
         data.to_csv('predictions/dt_2017.csv')
 
+        try:
+            experiment_xgb = client.create_experiment("XGB")
+        except:
+            experiment_xgb = client.get_experiment_by_name("XGB").experiment_id
+        run_xgb(experiment_id=experiment_xgb,
+                dataset=train)
+        real, predictions = test_best_model(experiment_xgb, test)
+
+        data = pd.DataFrame(data={
+            'Date': test['Date'],
+            'Real': real,
+            'Pred': predictions
+        })
+
+        print_test_errors(data,
+                          method='XGB')
+        (rmse, mae, r2) = eval_metrics(real, predictions)
+
+        print(get_current_time(), "- Score RMSE XGB Test -", rmse)
+        print(get_current_time(), "- Saved results of XGB to CSV")
+        data.to_csv('predictions/xgb_2017.csv')
+
     try:
-        experiment_xgb = client.create_experiment("XGB")
+        experiment_mlp = client.create_experiment("MLP")
     except:
-        experiment_xgb = client.get_experiment_by_name("XGB").experiment_id
-    run_xgb(experiment_id=experiment_xgb,
-            dataset=train)
-    real, predictions = test_best_model(experiment_xgb, test)
+        experiment_mlp = client.get_experiment_by_name("MLP").experiment_id
+    # run_mlp(experiment_id=experiment_mlp,
+    #         dataset=train)
+
+    real, predictions = test_best_model(experiment_mlp, test)
 
     data = pd.DataFrame(data={
         'Date': test['Date'],
@@ -140,12 +164,13 @@ if __name__ == "__main__":
     })
 
     print_test_errors(data,
-                      method='XGB')
+                      method='MLP')
     (rmse, mae, r2) = eval_metrics(real, predictions)
 
-    print(get_current_time(), "- Metrica RMSE XGB Test", rmse)
-    print(get_current_time(), "- Saved results of XGB to CSV")
-    data.to_csv('predictions/xgb_2017.csv')
+    print(get_current_time(), "- Score RMSE MLP Test -", rmse)
+    print(get_current_time(), "- Saved results of MLP to CSV")
+    data.to_csv('predictions/15mins/mlp_2017.csv')
+
 
     models = os.listdir('predictions/15mins')
     name_models = [name.split('_')[0] for name in models]

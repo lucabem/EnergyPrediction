@@ -7,7 +7,7 @@ from utils.constants import X
 from utils.functions import train_test, eval_metrics, train_cv
 
 
-def run_elasticnet(experiment_id, dataset, params=None):
+def run_elasticnet(experiment_id, dataset, params=None, verbose=False):
     print(get_current_time(), "- Starting ElasticNet Model...")
 
     train_x, test_x, train_y, test_y = train_test(dataset)
@@ -46,6 +46,10 @@ def run_elasticnet(experiment_id, dataset, params=None):
 
                 mlflow.sklearn.log_model(lr, "model")
 
+                if verbose:
+                    print(get_current_time(), "- [alpha={:.2f} , l1_ratio={:.2f}] - [mae={:.3f}, rmse={:.3f},"
+                                              " r2={:.3f}]".format(alpha, l1_ratio, mae, rmse, r2))
+
     print(get_current_time(), "- Ended ElasticNet Model...")
 
 
@@ -77,5 +81,9 @@ def run_elasticnet_cv(experiment_id, dataset, params=None):
                 mlflow.log_metric("rmse", rmse)
                 mlflow.log_metric("r2", r2)
                 mlflow.log_metric("mae", mae)
+
+                if verbose:
+                    print(get_current_time(), "- [alpha={:.2f} , l1_ratio={:.2f}] - [mae={:.3f}, rmse={:.3f},"
+                                              " r2={:.3f}]".format(alpha, l1_ratio, mae, rmse, r2))
 
     print(get_current_time(), "- Ended ElasticNet CV Model...")
