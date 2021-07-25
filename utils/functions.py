@@ -3,6 +3,7 @@ import logging
 import mlflow
 import numpy as np
 import pandas as pd
+from mlflow.tracking import MlflowClient
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split, RepeatedKFold
 
@@ -56,7 +57,13 @@ def test_best_model(experiment_id, test_data, metric='rmse', label_column='PV_Pr
     df = mlflow.search_runs(experiment_ids=[experiment_id],
                             filter_string="metrics.rmse < 400")
 
-    df.to_csv('modelInfo/' + experiment_id + '.csv')
+    client = MlflowClient()
+    experiment = client.get_experiment(experiment_id)
+
+    data = df[['metrics.mae', 'metrics.r2', 'metrics.rmse', 'params.alpha', 'params.l1_ratio',
+               'tags.mlflow.source.type', 'tags.train', 'tags.type_model']]
+
+    data.to_csv('modelInfo/' + experiment.name + '.csv')
 
     run_id = df.loc[df['metrics.rmse'].idxmin()]['run_id']
     model = mlflow.sklearn.load_model("runs:/" + run_id + "/model")
