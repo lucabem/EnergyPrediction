@@ -69,10 +69,10 @@ def run_dt(experiment_id, dataset, params=None, verbose=False):
                             mlflow.sklearn.log_model(model, "model")
 
                             if verbose:
-                                print(get_current_time(), "- [hidden_layer_sizes={} , solver={}, activation={},"
-                                                          " alpha={}, learning_rate_init={}] - [mae={:.3f}, rmse={:.3f},"
-                                                          " r2={:.3f}]".format(layer, s, a, al,
-                                                                               lri, mae, rmse, r2))
+                                print(get_current_time(), "- [criterion={}, splitter={}, max_depth={},"
+                                                          " min_samples_leaf={}, min_samples_split={}] - [mae={:.3f}, rmse={:.3f},"
+                                                          " r2={:.3f}]".format(cr, spl, depth, msl,
+                                                                               mss, mae, rmse, r2))
 
                             cont += 1
 

@@ -36,8 +36,7 @@ if __name__ == "__main__":
 
         run_elasticnet(experiment_id=experiment_elasticnet,
                        dataset=train,
-                       params=params,
-                       verbose=True)
+                       params=params)
 
         params_stats_elasticnet = save_best_params(experiment_id=experiment_elasticnet)
 
@@ -54,7 +53,7 @@ if __name__ == "__main__":
         (rmse, mae, r2) = eval_metrics(real, predictions)
 
         print(get_current_time(), "- Score RMSE Test -", rmse)
-        data.to_csv('predictions/elasticNet_2017.csv')
+        data.to_csv('predictions/15mins/elasticNet_2017.csv')
         print(get_current_time(), "- Saved results of ElasticNet to CSV")
 
         try:
@@ -62,8 +61,7 @@ if __name__ == "__main__":
         except:
             experiment_knn = client.get_experiment_by_name("KNN").experiment_id
         run_knn(experiment_id=experiment_knn,
-                dataset=train,
-                verbose=True)
+                dataset=train)
 
         params_stats_knn = save_best_params(experiment_id=experiment_knn)
 
@@ -82,7 +80,7 @@ if __name__ == "__main__":
         (rmse, mae, r2) = eval_metrics(real, predictions)
 
         print(get_current_time(), "- Score RMSE KNN Test -", rmse)
-        data.to_csv('predictions/KNN_2017.csv')
+        data.to_csv('predictions/15mins/KNN_2017.csv')
         print(get_current_time(), "- Saved results of KNN to CSV")
 
         try:
@@ -108,7 +106,7 @@ if __name__ == "__main__":
         (rmse, mae, r2) = eval_metrics(real, predictions)
 
         print(get_current_time(), "- Score RMSE LGBM Test -", rmse)
-        data.to_csv('predictions/LGBM_2017.csv')
+        data.to_csv('predictions/15mins/LGBM_2017.csv')
         print(get_current_time(), "- Saved results of LGBM to CSV")
 
         try:
@@ -116,8 +114,7 @@ if __name__ == "__main__":
         except:
             experiment_dt = client.get_experiment_by_name("DT").experiment_id
         run_dt(experiment_id=experiment_dt,
-               dataset=train,
-               verbose=True)
+               dataset=train)
 
         params_stats_dt = save_best_params(experiment_id=experiment_dt)
 
@@ -135,7 +132,7 @@ if __name__ == "__main__":
 
         print(get_current_time(), "- Score RMSE DT Test -", rmse)
         print(get_current_time(), "- Saved results of DT to CSV")
-        data.to_csv('predictions/dt_2017.csv')
+        data.to_csv('predictions/15mins/dt_2017.csv')
 
         try:
             experiment_xgb = client.create_experiment("XGB")
@@ -161,7 +158,7 @@ if __name__ == "__main__":
 
         print(get_current_time(), "- Score RMSE XGB Test -", rmse)
         print(get_current_time(), "- Saved results of XGB to CSV")
-        data.to_csv('predictions/xgb_2017.csv')
+        data.to_csv('predictions/15mins/xgb_2017.csv')
 
         try:
             experiment_mlp = client.create_experiment("MLP")

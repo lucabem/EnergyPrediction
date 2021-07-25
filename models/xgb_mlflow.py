@@ -64,7 +64,7 @@ def run_xgb(experiment_id, dataset, params=None, verbose=False):
                             mlflow.sklearn.log_model(model, "model")
 
                             if verbose:
-                                print(get_current_time(), "- [eta={} , max_depth={}, subsample={}, "
+                                print(get_current_time(), "- [eta={}, max_depth={}, subsample={}, "
                                                           "n_estimators={}, colsample_bytree={}] - [mae={:.3f}, "
                                                           "rmse={:.3f}, "
                                                           "r2={:.3f}]".format(e, depth, ss, trees,

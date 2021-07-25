@@ -57,10 +57,10 @@ def run_lgbm(experiment_id, dataset, params=None, verbose=False):
                         mlflow.log_metric("mae", mae)
 
                         if verbose:
-                            print(get_current_time(), "- [num_leaves={} , max_depth={}, learning_rate={}, "
+                            print(get_current_time(), "- [num_leaves={}, max_depth={}, learning_rate={}, "
                                                       "n_estimators={}] - [mae={:.3f}, rmse={:.3f}, "
-                                                      "r2={:.3f}]".format(num_leaves, max_depth, learning_rate,
-                                                                          n_estimators, mae, rmse, r2))
+                                                      "r2={:.3f}]".format(leaves, depth, lr,
+                                                                          trees, mae, rmse, r2))
 
                         mlflow.sklearn.log_model(model, "model")
 

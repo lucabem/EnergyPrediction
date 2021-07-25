@@ -47,7 +47,7 @@ def run_elasticnet(experiment_id, dataset, params=None, verbose=False):
                 mlflow.sklearn.log_model(lr, "model")
 
                 if verbose:
-                    print(get_current_time(), "- [alpha={:.2f} , l1_ratio={:.2f}] - [mae={:.3f}, rmse={:.3f},"
+                    print(get_current_time(), "- [alpha={:.2f}, l1_ratio={:.2f}] - [mae={:.3f}, rmse={:.3f},"
                                               " r2={:.3f}]".format(alpha, l1_ratio, mae, rmse, r2))
 
     print(get_current_time(), "- Ended ElasticNet Model...")

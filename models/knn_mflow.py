@@ -49,7 +49,7 @@ def run_knn(experiment_id, dataset, params=None, verbose=False):
                 mlflow.log_metric("mae", mae)
 
                 if verbose:
-                    print(get_current_time(), "- [n_neighbor={} , weight={}] - [mae={:.3f}, rmse={:.3f},"
+                    print(get_current_time(), "- [n_neighbor={}, weight={}] - [mae={:.3f}, rmse={:.3f},"
                                               " r2={:.3f}]".format(n_neighbor, weight, mae, rmse, r2))
 
                 mlflow.sklearn.log_model(model, "model")
