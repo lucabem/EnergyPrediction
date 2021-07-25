@@ -17,7 +17,7 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     np.random.seed(2021)
 
-    trainmodels = False
+    trainmodels = True
 
     data = load_cleaned_data()
     train, test = split_data(data)
@@ -148,29 +148,28 @@ if __name__ == "__main__":
         print(get_current_time(), "- Saved results of XGB to CSV")
         data.to_csv('predictions/xgb_2017.csv')
 
-    try:
-        experiment_mlp = client.create_experiment("MLP")
-    except:
-        experiment_mlp = client.get_experiment_by_name("MLP").experiment_id
-    # run_mlp(experiment_id=experiment_mlp,
-    #         dataset=train)
+        try:
+            experiment_mlp = client.create_experiment("MLP")
+        except:
+            experiment_mlp = client.get_experiment_by_name("MLP").experiment_id
+        run_mlp(experiment_id=experiment_mlp,
+                dataset=train)
 
-    real, predictions = test_best_model(experiment_mlp, test)
+        real, predictions = test_best_model(experiment_mlp, test)
 
-    data = pd.DataFrame(data={
-        'Date': test['Date'],
-        'Real': real,
-        'Pred': predictions
-    })
+        data = pd.DataFrame(data={
+            'Date': test['Date'],
+            'Real': real,
+            'Pred': predictions
+        })
 
-    print_test_errors(data,
-                      method='MLP')
-    (rmse, mae, r2) = eval_metrics(real, predictions)
+        print_test_errors(data,
+                          method='MLP')
+        (rmse, mae, r2) = eval_metrics(real, predictions)
 
-    print(get_current_time(), "- Score RMSE MLP Test -", rmse)
-    print(get_current_time(), "- Saved results of MLP to CSV")
-    data.to_csv('predictions/15mins/mlp_2017.csv')
-
+        print(get_current_time(), "- Score RMSE MLP Test -", rmse)
+        print(get_current_time(), "- Saved results of MLP to CSV")
+        data.to_csv('predictions/15mins/mlp_2017.csv')
 
     models = os.listdir('predictions/15mins')
     name_models = [name.split('_')[0] for name in models]

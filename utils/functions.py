@@ -55,6 +55,9 @@ def test_best_model(experiment_id, test_data, metric='rmse', label_column='PV_Pr
 
     df = mlflow.search_runs(experiment_ids=[experiment_id],
                             filter_string="metrics.rmse < 400")
+
+    df.to_csv('modelInfo/' + experiment_id + '.csv')
+
     run_id = df.loc[df['metrics.rmse'].idxmin()]['run_id']
     model = mlflow.sklearn.load_model("runs:/" + run_id + "/model")
 
