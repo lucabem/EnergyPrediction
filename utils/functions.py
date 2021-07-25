@@ -1,5 +1,4 @@
-import logging
-
+import matplotlib.pyplot as plt
 import mlflow
 import numpy as np
 import pandas as pd
@@ -9,8 +8,6 @@ from sklearn.model_selection import train_test_split, RepeatedKFold
 
 from preprocess.utils import scale_data, get_current_time
 from utils.constants import X
-
-import matplotlib.pyplot as plt
 
 
 def plot_frecuencies(data, method):
@@ -51,7 +48,7 @@ def print_test_errors(data, method, frecuency='15mins'):
     plt.close()
 
 
-def test_best_model(experiment_id, test_data, metric='rmse', label_column='PV_Production'):
+def test_best_model(experiment_id, test_data, label_column='PV_Production'):
     test_data = test_data.drop(columns=['Energy', 'Date'])
 
     df = mlflow.search_runs(experiment_ids=[experiment_id],
@@ -95,7 +92,7 @@ def train_cv(model, dataset, label_column='PV_Production', num_folds=10, num_bag
     X_tot = dataset.copy()
     y_tot = dataset[label_column].values.reshape(-1)
 
-    X_tot = scale_data(X_tot, columns=X)
+    X_tot = scale_data(X_tot, vars=X)
 
     # Creamos arrays para las predicciones
     preds_val = np.empty((len(X_tot), num_bags))

@@ -1,10 +1,9 @@
 import mlflow
-
-from utils.constants import X
 from lightgbm import LGBMRegressor
 
 from preprocess.utils import get_current_time, scale_data
-from utils.functions import train_test, eval_metrics, train_cv
+from utils.constants import X
+from utils.functions import train_test, eval_metrics
 
 
 def run_lgbm(experiment_id, dataset, params=None, verbose=False):
@@ -12,8 +11,8 @@ def run_lgbm(experiment_id, dataset, params=None, verbose=False):
 
     train_x, test_x, train_y, test_y = train_test(dataset)
 
-    train_x = scale_data(train_x, columns=X)
-    test_x = scale_data(test_x, columns=X)
+    train_x = scale_data(train_x, vars=X)
+    test_x = scale_data(test_x, vars=X)
 
     if params is None:
         num_leaves = [leave for leave in range(10, 51, 10)]

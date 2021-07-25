@@ -15,6 +15,7 @@ columns = ["Date",
            "Energy_To_Battery", "Energy_To_Grid",
            "PV_Production"]
 
+
 def load_datasets_15mnts():
     data_files = os.listdir("CononsythFarm/Raw_data/North_Mains_Solar_15minutes")
     list_data = []
@@ -108,13 +109,13 @@ def load_cleaned_data():
     return remove_zeros_rows(remove_nan_rows(dataset))
 
 
-def scale_data(dataset, columns=X):
+def scale_data(dataset, vars=X):
     scaler = StandardScaler()
-    scaler.fit(dataset[columns].values)
-    return scaler.transform(dataset[columns].values)
+    scaler.fit(dataset[vars].values)
+    return scaler.transform(dataset[vars].values)
 
 
-def split_data(dataset, year=2017):
+def split_data(dataset):
     data_datetime = dataset.set_index(dataset['Date'])
     data_datetime = data_datetime.sort_index()
     return data_datetime.loc[data_datetime["Date"] < "2017-01-01"], data_datetime.loc['2017-01-01':'2017-12-31']

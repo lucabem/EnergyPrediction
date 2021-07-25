@@ -12,8 +12,8 @@ def run_elasticnet(experiment_id, dataset, params=None, verbose=False):
 
     train_x, test_x, train_y, test_y = train_test(dataset)
 
-    train_x = scale_data(train_x, columns=X)
-    test_x = scale_data(test_x, columns=X)
+    train_x = scale_data(train_x, vars=X)
+    test_x = scale_data(test_x, vars=X)
 
     if params is None:
         alphas = [i for i in np.arange(0, 1.25, 0.25)]
