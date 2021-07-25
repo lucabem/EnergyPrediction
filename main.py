@@ -36,9 +36,10 @@ if __name__ == "__main__":
 
         run_elasticnet(experiment_id=experiment_elasticnet,
                        dataset=train,
-                       params=params)
+                       params=params,
+                       verbose=True)
 
-        params_stats = save_best_params(experiment_id=experiment_elasticnet)
+        params_stats_elasticnet = save_best_params(experiment_id=experiment_elasticnet)
 
         real, predictions = test_best_model(experiment_elasticnet, test)
 
@@ -61,7 +62,10 @@ if __name__ == "__main__":
         except:
             experiment_knn = client.get_experiment_by_name("KNN").experiment_id
         run_knn(experiment_id=experiment_knn,
-                dataset=train)
+                dataset=train,
+                verbose=True)
+
+        params_stats_knn = save_best_params(experiment_id=experiment_knn)
 
         real, predictions = test_best_model(experiment_knn, test)
 
@@ -86,7 +90,10 @@ if __name__ == "__main__":
         except:
             experiment_lgbm = client.get_experiment_by_name("LGBM").experiment_id
         run_lgbm(experiment_id=experiment_lgbm,
-                 dataset=train)
+                 dataset=train,
+                 verbose=True)
+
+        params_stats_lgbm = save_best_params(experiment_id=experiment_lgbm)
 
         real, predictions = test_best_model(experiment_lgbm, test)
 
@@ -109,7 +116,11 @@ if __name__ == "__main__":
         except:
             experiment_dt = client.get_experiment_by_name("DT").experiment_id
         run_dt(experiment_id=experiment_dt,
-               dataset=train)
+               dataset=train,
+               verbose=True)
+
+        params_stats_dt = save_best_params(experiment_id=experiment_dt)
+
         real, predictions = test_best_model(experiment_dt, test)
 
         data = pd.DataFrame(data={
@@ -131,7 +142,11 @@ if __name__ == "__main__":
         except:
             experiment_xgb = client.get_experiment_by_name("XGB").experiment_id
         run_xgb(experiment_id=experiment_xgb,
-                dataset=train)
+                dataset=train,
+                verbose=True)
+
+        params_stats_xgb = save_best_params(experiment_id=experiment_xgb)
+
         real, predictions = test_best_model(experiment_xgb, test)
 
         data = pd.DataFrame(data={
@@ -153,7 +168,10 @@ if __name__ == "__main__":
         except:
             experiment_mlp = client.get_experiment_by_name("MLP").experiment_id
         run_mlp(experiment_id=experiment_mlp,
-                dataset=train)
+                dataset=train,
+                verbose=True)
+
+        params_stats_mlp = save_best_params(experiment_id=experiment_mlp)
 
         real, predictions = test_best_model(experiment_mlp, test)
 

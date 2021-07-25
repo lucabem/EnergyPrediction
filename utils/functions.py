@@ -60,10 +60,6 @@ def test_best_model(experiment_id, test_data, metric='rmse', label_column='PV_Pr
     client = MlflowClient()
     experiment = client.get_experiment(experiment_id)
 
-    data = df[['metrics.mae', 'metrics.r2', 'metrics.rmse', 'params.alpha', 'params.l1_ratio',
-               'tags.mlflow.source.type', 'tags.train', 'tags.type_model']]
-
-    data.to_csv('modelInfo/' + experiment.name + '.csv')
 
     run_id = df.loc[df['metrics.rmse'].idxmin()]['run_id']
     model = mlflow.sklearn.load_model("runs:/" + run_id + "/model")
@@ -128,9 +124,11 @@ def train_cv(model, dataset, label_column='PV_Production', num_folds=10, num_bag
 
 
 def save_best_params(experiment_id, nrows=20):
+    client = MlflowClient()
     data = mlflow.search_runs(experiment_ids=[experiment_id],
                               max_results=nrows,
                               order_by=['metric.rmse ASC'])
+    name = client.get_experiment(experiment_id).name
     df = pd.DataFrame(data=data)
-    df.to_csv("modelInfo/" + experiment_id + '.csv')
+    df.to_csv("modelInfo/" + name + '.csv')
     return data

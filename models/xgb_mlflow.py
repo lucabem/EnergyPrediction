@@ -7,7 +7,7 @@ from preprocess.utils import get_current_time, scale_data
 from utils.functions import train_test, eval_metrics, train_cv
 
 
-def run_xgb(experiment_id, dataset, params=None):
+def run_xgb(experiment_id, dataset, params=None, verbose=False):
     print(get_current_time(), "- Starting XGB Model...")
 
     train_x, test_x, train_y, test_y = train_test(dataset)
@@ -62,5 +62,12 @@ def run_xgb(experiment_id, dataset, params=None):
                             mlflow.log_metric("mae", mae)
 
                             mlflow.sklearn.log_model(model, "model")
+
+                            if verbose:
+                                print(get_current_time(), "- [eta={} , max_depth={}, subsample={}, "
+                                                          "n_estimators={}, colsample_bytree={}] - [mae={:.3f}, "
+                                                          "rmse={:.3f}, "
+                                                          "r2={:.3f}]".format(e, depth, ss, trees,
+                                                                              csby, mae, rmse, r2))
 
     print(get_current_time(), "- Ended XGB Model...")

@@ -67,8 +67,8 @@ def run_mlp(experiment_id, dataset, params=None, verbose=False):
                             mlflow.log_metric("mae", mae)
 
                             if verbose:
-                                print(get_current_time(), "- [hidden_layer_sizes={} , solver={}, activation={},"
-                                                          " alpha={}, learning_rate_init={}] - [mae={:.3f}, rmse={:.3f},"
+                                print(get_current_time(), "- [hidden_layer_sizes={} , solver={}, activation={}, "
+                                                          "alpha={}, learning_rate_init={}] - [mae={:.3f}, rmse={:.3f},"
                                                           " r2={:.3f}]".format(layer, s, a, al,
                                                                                lri, mae, rmse, r2))
 

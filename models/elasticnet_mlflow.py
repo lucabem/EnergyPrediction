@@ -53,7 +53,7 @@ def run_elasticnet(experiment_id, dataset, params=None, verbose=False):
     print(get_current_time(), "- Ended ElasticNet Model...")
 
 
-def run_elasticnet_cv(experiment_id, dataset, params=None):
+def run_elasticnet_cv(experiment_id, dataset, params=None, verbose=False):
     print(get_current_time(), "- Starting ElasticNet CV Model...")
 
     if params is None:
