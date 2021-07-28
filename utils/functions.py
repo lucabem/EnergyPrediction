@@ -197,6 +197,8 @@ def train_model(experiment_name, train_data, test_data, params=None, verbose=Fal
         data = evaluate_model(experiment_id=experiment,
                               name=experiment_name,
                               test=test_data)
+    else:
+        print(get_current_time(), '- No model named', experiment_name + '. Skipping...')
     return data, params_stats
 
 

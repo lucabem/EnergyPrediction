@@ -23,7 +23,8 @@ if __name__ == "__main__":
             train_model(experiment_name=model,
                         train_data=train,
                         test_data=test,
-                        verbose=True)
+                        params=None,
+                        verbose=False)
 
     models = os.listdir('predictions/15mins')
     name_models = [name.split('_')[0] for name in models]
