@@ -12,179 +12,108 @@ from models.xgb_mlflow import run_xgb
 from preprocess.utils import *
 from utils.functions import test_best_model, print_test_errors, eval_metrics, save_best_params, plot_frecuencies
 
+
+def train_model(experiment_name, train_data, test_data, params=None, verbose=False):
+
+    try:
+        experiment = client.create_experiment(experiment_name)
+    except:
+        experiment = client.get_experiment_by_name(experiment_name).experiment_id
+
+    data = None
+    params_stats = None
+
+    if experiment_name == "ElasticNet":
+        run_dt(experiment_id=experiment,
+               dataset=train_data,
+               params=params,
+               verbose=verbose)
+        params_stats = save_best_params(experiment_id=experiment)
+        data = evaluate_model(experiment_id=experiment,
+                              name=experiment_name,
+                              test=test_data)
+    elif experiment_name == "KNN":
+        run_knn(experiment_id=experiment,
+                dataset=train_data,
+                params=params,
+                verbose=verbose)
+        params_stats = save_best_params(experiment_id=experiment)
+        data = evaluate_model(experiment_id=experiment,
+                              name=experiment_name,
+                              test=test_data)
+    elif experiment_name == "LGBM":
+        run_lgbm(experiment_id=experiment,
+                 dataset=train_data,
+                 params=params,
+                 verbose=verbose)
+        params_stats = save_best_params(experiment_id=experiment)
+        data = evaluate_model(experiment_id=experiment,
+                              name=experiment_name,
+                              test=test_data)
+    elif experiment_name == "DT":
+        run_dt(experiment_id=experiment,
+               dataset=train_data,
+               params=params,
+               verbose=verbose)
+        params_stats = save_best_params(experiment_id=experiment)
+        data = evaluate_model(experiment_id=experiment,
+                              name=experiment_name,
+                              test=test_data)
+    elif experiment_name == "XGB":
+        run_xgb(experiment_id=experiment,
+                dataset=train_data,
+                params=params,
+                verbose=verbose)
+        params_stats = save_best_params(experiment_id=experiment)
+        data = evaluate_model(experiment_id=experiment,
+                              name=experiment_name,
+                              test=test_data)
+    elif experiment_name == "MLP":
+        run_mlp(experiment_id=experiment,
+                dataset=train_data,
+                verbose=verbose,
+                params=params)
+        params_stats = save_best_params(experiment_id=experiment)
+        data = evaluate_model(experiment_id=experiment,
+                              name=experiment_name,
+                              test=test_data)
+    return data, params_stats
+
+
+def evaluate_model(experiment_id, name, test):
+    real, predictions = test_best_model(experiment_id, test)
+    data = pd.DataFrame(data={
+        'Date': test['Date'],
+        'Real': real,
+        'Pred': predictions
+    })
+    print_test_errors(data,
+                      method=name)
+    (rmse, mae, r2) = eval_metrics(real, predictions)
+
+    print(get_current_time(), "- Score RMSE", name, "Test -", rmse)
+    print(get_current_time(), "- Saved results to CSV")
+    data.to_csv('predictions/15mins/' + name + '_2017.csv')
+    return data
+
+
 if __name__ == "__main__":
 
     warnings.filterwarnings("ignore")
     np.random.seed(2021)
 
-    trainmodels = True
+    trainmodels = False
 
     data = load_cleaned_data()
     train, test = split_data(data)
     client = MlflowClient()
 
+    models = ['ElasticNet', 'KNN', 'LGBM', 'DT', 'XGB', 'MLP']
     if trainmodels:
-        # try:
-        #     experiment_elasticnet = client.create_experiment("ElasticNet")
-        # except:
-        #     experiment_elasticnet = client.get_experiment_by_name("ElasticNet").experiment_id
-        #
-        # params = {
-        #     'alphas': [i for i in np.arange(0, 1.1, 0.1)],
-        #     'l1_ratios': [i for i in np.arange(0, 1.1, 0.1)]
-        # }
-        #
-        # run_elasticnet(experiment_id=experiment_elasticnet,
-        #                dataset=train,
-        #                params=params)
-        #
-        # params_stats_elasticnet = save_best_params(experiment_id=experiment_elasticnet)
-        #
-        # real, predictions = test_best_model(experiment_elasticnet, test)
-        #
-        # data = pd.DataFrame(data={
-        #     'Date': test['Date'],
-        #     'Real': real,
-        #     'Pred': predictions
-        # })
-        #
-        # print_test_errors(data,
-        #                   method='ElasticNet')
-        # (rmse, mae, r2) = eval_metrics(real, predictions)
-        #
-        # print(get_current_time(), "- Score RMSE Test -", rmse)
-        # data.to_csv('predictions/15mins/elasticNet_2017.csv')
-        # print(get_current_time(), "- Saved results of ElasticNet to CSV")
-        #
-        # try:
-        #     experiment_knn = client.create_experiment("KNN")
-        # except:
-        #     experiment_knn = client.get_experiment_by_name("KNN").experiment_id
-        # run_knn(experiment_id=experiment_knn,
-        #         dataset=train)
-        #
-        # params_stats_knn = save_best_params(experiment_id=experiment_knn)
-        #
-        # real, predictions = test_best_model(experiment_knn, test)
-        #
-        # predictions = predictions.reshape(-1)
-        #
-        # data = pd.DataFrame(data={
-        #     'Date': test['Date'],
-        #     'Real': real,
-        #     'Pred': predictions
-        # })
-        #
-        # print_test_errors(data,
-        #                   method='KNN')
-        # (rmse, mae, r2) = eval_metrics(real, predictions)
-        #
-        # print(get_current_time(), "- Score RMSE KNN Test -", rmse)
-        # data.to_csv('predictions/15mins/KNN_2017.csv')
-        # print(get_current_time(), "- Saved results of KNN to CSV")
-        #
-        # try:
-        #     experiment_lgbm = client.create_experiment("LGBM")
-        # except:
-        #     experiment_lgbm = client.get_experiment_by_name("LGBM").experiment_id
-        # run_lgbm(experiment_id=experiment_lgbm,
-        #          dataset=train,
-        #          verbose=True)
-        #
-        # params_stats_lgbm = save_best_params(experiment_id=experiment_lgbm)
-        #
-        # real, predictions = test_best_model(experiment_lgbm, test)
-        #
-        # data = pd.DataFrame(data={
-        #     'Date': test['Date'],
-        #     'Real': real,
-        #     'Pred': predictions
-        # })
-        #
-        # print_test_errors(data,
-        #                   method='LGBM')
-        # (rmse, mae, r2) = eval_metrics(real, predictions)
-        #
-        # print(get_current_time(), "- Score RMSE LGBM Test -", rmse)
-        # data.to_csv('predictions/15mins/LGBM_2017.csv')
-        # print(get_current_time(), "- Saved results of LGBM to CSV")
-        #
-        # try:
-        #     experiment_dt = client.create_experiment("DT")
-        # except:
-        #     experiment_dt = client.get_experiment_by_name("DT").experiment_id
-        # run_dt(experiment_id=experiment_dt,
-        #        dataset=train)
-        #
-        # params_stats_dt = save_best_params(experiment_id=experiment_dt)
-        #
-        # real, predictions = test_best_model(experiment_dt, test)
-        #
-        # data = pd.DataFrame(data={
-        #     'Date': test['Date'],
-        #     'Real': real,
-        #     'Pred': predictions
-        # })
-        #
-        # print_test_errors(data,
-        #                   method='DT')
-        # (rmse, mae, r2) = eval_metrics(real, predictions)
-        #
-        # print(get_current_time(), "- Score RMSE DT Test -", rmse)
-        # print(get_current_time(), "- Saved results of DT to CSV")
-        # data.to_csv('predictions/15mins/dt_2017.csv')
-
-        try:
-            experiment_xgb = client.create_experiment("XGB")
-        except:
-            experiment_xgb = client.get_experiment_by_name("XGB").experiment_id
-        run_xgb(experiment_id=experiment_xgb,
-                dataset=train,
-                verbose=True)
-
-        params_stats_xgb = save_best_params(experiment_id=experiment_xgb)
-
-        real, predictions = test_best_model(experiment_xgb, test)
-
-        data = pd.DataFrame(data={
-            'Date': test['Date'],
-            'Real': real,
-            'Pred': predictions
-        })
-
-        print_test_errors(data,
-                          method='XGB')
-        (rmse, mae, r2) = eval_metrics(real, predictions)
-
-        print(get_current_time(), "- Score RMSE XGB Test -", rmse)
-        print(get_current_time(), "- Saved results of XGB to CSV")
-        data.to_csv('predictions/15mins/xgb_2017.csv')
-
-        try:
-            experiment_mlp = client.create_experiment("MLP")
-        except:
-            experiment_mlp = client.get_experiment_by_name("MLP").experiment_id
-        run_mlp(experiment_id=experiment_mlp,
-                dataset=train,
-                verbose=True)
-
-        params_stats_mlp = save_best_params(experiment_id=experiment_mlp)
-
-        real, predictions = test_best_model(experiment_mlp, test)
-
-        data = pd.DataFrame(data={
-            'Date': test['Date'],
-            'Real': real,
-            'Pred': predictions
-        })
-
-        print_test_errors(data,
-                          method='MLP')
-        (rmse, mae, r2) = eval_metrics(real, predictions)
-
-        print(get_current_time(), "- Score RMSE MLP Test -", rmse)
-        print(get_current_time(), "- Saved results of MLP to CSV")
-        data.to_csv('predictions/15mins/mlp_2017.csv')
+        for model in models:
+            train_model(experiment_name=model,
+                        train_data=train,
+                        test_data=test)
 
     models = os.listdir('predictions/15mins')
     name_models = [name.split('_')[0] for name in models]
