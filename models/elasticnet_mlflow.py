@@ -16,8 +16,8 @@ def run_elasticnet(experiment_id, dataset, params=None, verbose=False):
     test_x = scale_data(test_x, vars=X)
 
     if params is None:
-        alphas = [i for i in np.arange(0, 1.25, 0.25)]
-        l1_ratios = [i for i in np.arange(0, 1.25, 0.25)]
+        alphas = [i for i in np.arange(0, 1.05, 0.5)]
+        l1_ratios = [i for i in np.arange(0, 1.05, 0.05)]
     else:
         alphas = params['alphas']
         l1_ratios = params['l1_ratios']
