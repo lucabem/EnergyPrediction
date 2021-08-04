@@ -37,7 +37,7 @@ def modify_model_info(fileName=None):
                                       'tags.mlflow.source.type', 'tags.mlflow.user',
                                       'tags.train', 'tags.mlflow.source.git.commit',
                                       'tags.type_model', 'tags.mlflow.log-model.history', 'tags.mlflow.source.name'])
-            data.to_csv('modelInfo/' + file + '.csv',
+            data.to_csv('modelInfo/' + file,
                         index=False)
 
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     data = load_cleaned_data()
     train, test = split_data(data)
 
-    models = ['MLP']
+    models = []
 
     if trainmodels:
         print(get_current_time(), '- Training models -', models)
@@ -162,6 +162,7 @@ if __name__ == "__main__":
     else:
         print(get_current_time(), '- Not training models -', models)
 
+    modify_model_info()
 
     models = os.listdir('predictions/15mins')
     name_models = [name.split('_')[0] for name in models]
