@@ -6,7 +6,7 @@ from mlflow.tracking import MlflowClient
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split, RepeatedKFold
 
-from preprocess.utils import scale_data, get_current_time
+from preprocess.utils import scale_data, get_current_time, split_data
 from utils.constants import X
 
 
@@ -70,13 +70,14 @@ def test_best_model(experiment_id, test_data, label_column='PV_Production'):
 
     print(get_current_time(), "- Making predictions for test data...")
 
-    return test_y, model.predict(test_data_scaled)
+    return test_y.values, model.predict(test_data_scaled).reshape(-1)
 
 
-def train_test(dataset, label_column='PV_Production', train_percentage=0.75):
-    dataset = dataset.drop(columns=['Energy', 'Date'])
-    train, test = train_test_split(dataset,
-                                   train_size=train_percentage)
+def train_test(dataset, label_column='PV_Production'):
+    train, test = split_data(dataset, year=2016)
+
+    train = train.drop(columns=['Energy', 'Date'])
+    test  = test.drop(columns=['Energy', 'Date'])
 
     train_values = train.drop(columns=[label_column])
     test_values = test.drop(columns=[label_column])

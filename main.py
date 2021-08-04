@@ -19,34 +19,33 @@ from utils.functions import plot_frecuencies, save_best_params, test_best_model,
 
 def modify_model_info(fileName=None):
     if fileName is not None:
-        data = pd.read_csv('modelInfo/' + fileName)
+        data = pd.read_csv('modelInfo/' + fileName + '.csv')
         data = data.drop(columns=['Unnamed: 0', 'run_id', 'experiment_id', 'status',
                                   'artifact_uri', 'start_time', 'end_time',
                                   'tags.mlflow.source.type', 'tags.mlflow.user',
                                   'tags.train', 'tags.mlflow.source.git.commit',
                                   'tags.type_model', 'tags.mlflow.log-model.history', 'tags.mlflow.source.name'])
-        data.to_csv('modelInfo/' + fileName,
+        data.to_csv('modelInfo/' + fileName + '.csv',
                     index=False)
 
     else:
         files = os.listdir('modelInfo')
         for file in files:
             data = pd.read_csv('modelInfo/' + file)
-            print(data.columns)
             data = data.drop(columns=['Unnamed: 0', 'run_id', 'experiment_id', 'status',
                                       'artifact_uri', 'start_time', 'end_time',
                                       'tags.mlflow.source.type', 'tags.mlflow.user',
                                       'tags.train', 'tags.mlflow.source.git.commit',
                                       'tags.type_model', 'tags.mlflow.log-model.history', 'tags.mlflow.source.name'])
-            data.to_csv('modelInfo/' + file,
+            data.to_csv('modelInfo/' + file + '.csv',
                         index=False)
 
 
 def train_model(experiment_name, train_data, test_data, params=None, verbose=False):
     client = MlflowClient()
     try:
-        print(get_current_time(), '- Experiment with name ' + experiment_name + ' has been created')
         experiment = client.create_experiment(experiment_name)
+        print(get_current_time(), '- Experiment with name ' + experiment_name + ' has been created')
     except:
         print(get_current_time(), '- Experiment with name ' + experiment_name + ' already exists. Importing it...')
         experiment = client.get_experiment_by_name(experiment_name).experiment_id
@@ -108,7 +107,7 @@ def train_model(experiment_name, train_data, test_data, params=None, verbose=Fal
         data = evaluate_model(experiment_id=experiment,
                               name=experiment_name,
                               test=test_data)
-    elif experiment_name == 'TEST':
+    elif experiment_name == 'ENSEMBLE':
         run_ensemble(experiment_id=experiment,
                      dataset=train_data,
                      verbose=verbose,
@@ -120,6 +119,7 @@ def train_model(experiment_name, train_data, test_data, params=None, verbose=Fal
 
 def evaluate_model(experiment_id, name, test):
     real, predictions = test_best_model(experiment_id, test)
+
     data = pd.DataFrame(data={
         'Date': test['Date'],
         'Real': real,
@@ -127,10 +127,12 @@ def evaluate_model(experiment_id, name, test):
     })
     print_test_errors(data,
                       method=name)
+
     (rmse, _, _) = eval_metrics(real, predictions)
 
-    print(get_current_time(), "- Score RMSE", name, "Test -", rmse)
+    print(get_current_time(), "- Score 15mins RMSE", name, "Test -", rmse)
     print(get_current_time(), "- Saved results to CSV")
+
     data.to_csv('predictions/15mins/' + name + '_2017.csv')
 
     return data
@@ -141,12 +143,13 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     np.random.seed(2021)
 
-    trainmodels = False
+    trainmodels = True
 
     data = load_cleaned_data()
     train, test = split_data(data)
 
-    models = ['DT', 'ElasticNet', 'KNN', 'LGBM', 'MLP', 'XGB', 'TEST']
+    models = ['MLP']
+
     if trainmodels:
         print(get_current_time(), '- Training models -', models)
         for model in models:
@@ -154,11 +157,11 @@ if __name__ == "__main__":
                         train_data=train,
                         test_data=test,
                         params=None,
-                        verbose=True)
-
-        modify_model_info()
+                        verbose=False)
+            modify_model_info(fileName=model)
     else:
         print(get_current_time(), '- Not training models -', models)
+
 
     models = os.listdir('predictions/15mins')
     name_models = [name.split('_')[0] for name in models]
@@ -172,3 +175,23 @@ if __name__ == "__main__":
         plot_frecuencies(data=data,
                          method=name_models[models.index(model)])
 
+    print(get_current_time(), '- RMSE on Different Models')
+
+    dict_data = {'Model': ['EN', 'KNN', 'DT', 'LGBM', 'XGB']}
+
+    directories = os.listdir('predictions')
+    for direct in directories:
+        dict_data[direct] = []
+        files = os.listdir('predictions/' + direct)
+        for file in files:
+            name = file.split('_')[0]
+            data = pd.read_csv('predictions/' + direct + '/' + file)
+            (rmse, _, _) = eval_metrics(data['Real'], data['Pred'])
+            dict_data[direct].append(rmse / 1000.0)
+
+    data = pd.DataFrame(dict_data)
+    cols_sorted = ['Model', '15mins', 'daily', 'weekly', 'monthly']
+    data = data[cols_sorted]
+    data.to_csv('scores/final_scores.csv',
+                index=False)
+    print(data)

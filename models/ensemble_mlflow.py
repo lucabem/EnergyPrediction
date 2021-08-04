@@ -1,17 +1,13 @@
 import random
 
 import mlflow
-import numpy as np
 import pandas as pd
-from lightgbm import LGBMRegressor
+from scipy.optimize import minimize
 from sklearn.neural_network import MLPRegressor
-from xgboost import XGBRegressor
 
 from preprocess.utils import get_current_time, scale_data
 from utils.constants import X
 from utils.functions import train_test, eval_metrics
-
-from scipy.optimize import minimize
 
 
 def combina_predicciones(weigths, test_y, predicted_1, predicted_2, predicted_3):
@@ -22,7 +18,7 @@ def combina_predicciones(weigths, test_y, predicted_1, predicted_2, predicted_3)
     return rmse
 
 
-def run_ensemble(experiment_id, dataset, params=None, verbose=False):
+def run_ensemble(experiment_id, dataset, verbose=False):
     print(get_current_time(), "- Starting Ensemble Model...")
 
     train_x, test_x, train_y, test_y = train_test(dataset)

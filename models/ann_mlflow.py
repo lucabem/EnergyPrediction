@@ -18,12 +18,10 @@ def run_mlp(experiment_id, dataset, params=None, verbose=False):
 
     if params is None:
         num_units_per_layer = [8, 16, 24, 32, 40, 50, 64, 70, 80, 90, 128]
-        num_layers = [4]
+        num_layers = [1, 2, 3, 4]
         solver = ['adam']
         activation = ['relu']
-        # alpha = [0.00001, 0.0001, 0.001]
-        alpha = [0.0001]
-        # learning_rate_init = [0.0001, 0.001, 0.01, 0.1]
+        alpha = [0.00001, 0.0001, 0.001]
         learning_rate_init = [0.01, 0.1]
         random_state = 2021
     else:

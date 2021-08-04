@@ -115,7 +115,9 @@ def scale_data(dataset, vars=X):
     return scaler.transform(dataset[vars].values)
 
 
-def split_data(dataset):
+def split_data(dataset, year=2017):
     data_datetime = dataset.set_index(dataset['Date'])
     data_datetime = data_datetime.sort_index()
-    return data_datetime.loc[data_datetime["Date"] < "2017-01-01"], data_datetime.loc['2017-01-01':'2017-12-31']
+    start = str(year) + '-01-01'
+    ended = str(year) + '-12-31'
+    return data_datetime.loc[data_datetime["Date"] < start], data_datetime.loc[start:ended]

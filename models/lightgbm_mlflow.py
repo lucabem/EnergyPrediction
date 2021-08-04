@@ -17,7 +17,7 @@ def run_lgbm(experiment_id, dataset, params=None, verbose=False):
     if params is None:
         num_leaves = [leave for leave in range(10, 51, 10)]
         max_depth = [depth for depth in range(1, 11)]
-        learning_rate = [0.0001, 0.001, 0.01, 0.1, 0.2, 0.4, 0.6, 0.8, 1]
+        learning_rate = [0.0001, 0.001, 0.01, 0.1, 0.2]
         n_estimators = [trees for trees in range(100, 1001, 100)]
         n_jobs = 10
     else:
