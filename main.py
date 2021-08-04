@@ -17,28 +17,30 @@ from utils.functions import plot_frecuencies, save_best_params, test_best_model,
     print_test_errors
 
 
-def modify_model_info(fileName=None):
-    if fileName is not None:
-        data = pd.read_csv('modelInfo/' + fileName + '.csv')
-        data = data.drop(columns=['Unnamed: 0', 'run_id', 'experiment_id', 'status',
-                                  'artifact_uri', 'start_time', 'end_time',
-                                  'tags.mlflow.source.type', 'tags.mlflow.user',
-                                  'tags.train', 'tags.mlflow.source.git.commit',
-                                  'tags.type_model', 'tags.mlflow.log-model.history', 'tags.mlflow.source.name'])
-        data.to_csv('modelInfo/' + fileName + '.csv',
-                    index=False)
+def modify_model_info(filename=None):
+    if filename is not None:
+        dataset = pd.read_csv('modelInfo/' + filename + '.csv')
+        dataset = dataset.drop(columns=['Unnamed: 0', 'run_id', 'experiment_id', 'status',
+                                        'artifact_uri', 'start_time', 'end_time',
+                                        'tags.mlflow.source.type', 'tags.mlflow.user',
+                                        'tags.train', 'tags.mlflow.source.git.commit',
+                                        'tags.type_model', 'tags.mlflow.log-model.history',
+                                        'tags.mlflow.source.name'])
+        dataset.to_csv('modelInfo/' + filename + '.csv',
+                       index=False)
 
     else:
-        files = os.listdir('modelInfo')
-        for file in files:
-            data = pd.read_csv('modelInfo/' + file)
-            data = data.drop(columns=['Unnamed: 0', 'run_id', 'experiment_id', 'status',
-                                      'artifact_uri', 'start_time', 'end_time',
-                                      'tags.mlflow.source.type', 'tags.mlflow.user',
-                                      'tags.train', 'tags.mlflow.source.git.commit',
-                                      'tags.type_model', 'tags.mlflow.log-model.history', 'tags.mlflow.source.name'])
-            data.to_csv('modelInfo/' + file,
-                        index=False)
+        modelfiles = os.listdir('modelInfo')
+        for modelfile in modelfiles:
+            dataset = pd.read_csv('modelInfo/' + modelfile)
+            dataset = dataset.drop(columns=['Unnamed: 0', 'run_id', 'experiment_id', 'status',
+                                            'artifact_uri', 'start_time', 'end_time',
+                                            'tags.mlflow.source.type', 'tags.mlflow.user',
+                                            'tags.train', 'tags.mlflow.source.git.commit',
+                                            'tags.type_model', 'tags.mlflow.log-model.history',
+                                            'tags.mlflow.source.name'])
+            dataset.to_csv('modelInfo/' + modelfile,
+                           index=False)
 
 
 def train_model(experiment_name, train_data, test_data, params=None, verbose=False):
@@ -50,7 +52,7 @@ def train_model(experiment_name, train_data, test_data, params=None, verbose=Fal
         print(get_current_time(), '- Experiment with name ' + experiment_name + ' already exists. Importing it...')
         experiment = client.get_experiment_by_name(experiment_name).experiment_id
 
-    data = None
+    test_results = None
     params_stats = None
 
     if experiment_name == "ElasticNet":
@@ -59,83 +61,82 @@ def train_model(experiment_name, train_data, test_data, params=None, verbose=Fal
                        params=params,
                        verbose=verbose)
         params_stats = save_best_params(experiment_id=experiment)
-        data = evaluate_model(experiment_id=experiment,
-                              name=experiment_name,
-                              test=test_data)
+        test_results = evaluate_model(experiment_id=experiment,
+                                      name=experiment_name,
+                                      test_data=test_data)
     elif experiment_name == "KNN":
         run_knn(experiment_id=experiment,
                 dataset=train_data,
                 params=params,
                 verbose=verbose)
         params_stats = save_best_params(experiment_id=experiment)
-        data = evaluate_model(experiment_id=experiment,
-                              name=experiment_name,
-                              test=test_data)
+        test_results = evaluate_model(experiment_id=experiment,
+                                      name=experiment_name,
+                                      test_data=test_data)
     elif experiment_name == "LGBM":
         run_lgbm(experiment_id=experiment,
                  dataset=train_data,
                  params=params,
                  verbose=verbose)
         params_stats = save_best_params(experiment_id=experiment)
-        data = evaluate_model(experiment_id=experiment,
-                              name=experiment_name,
-                              test=test_data)
+        test_results = evaluate_model(experiment_id=experiment,
+                                      name=experiment_name,
+                                      test_data=test_data)
     elif experiment_name == "DT":
         run_dt(experiment_id=experiment,
                dataset=train_data,
                params=params,
                verbose=verbose)
         params_stats = save_best_params(experiment_id=experiment)
-        data = evaluate_model(experiment_id=experiment,
-                              name=experiment_name,
-                              test=test_data)
+        test_results = evaluate_model(experiment_id=experiment,
+                                      name=experiment_name,
+                                      test_data=test_data)
     elif experiment_name == "XGB":
         run_xgb(experiment_id=experiment,
                 dataset=train_data,
                 params=params,
                 verbose=verbose)
         params_stats = save_best_params(experiment_id=experiment)
-        data = evaluate_model(experiment_id=experiment,
-                              name=experiment_name,
-                              test=test_data)
+        test_results = evaluate_model(experiment_id=experiment,
+                                      name=experiment_name,
+                                      test_data=test_data)
     elif experiment_name == "MLP":
         run_mlp(experiment_id=experiment,
                 dataset=train_data,
                 verbose=verbose,
                 params=params)
         params_stats = save_best_params(experiment_id=experiment)
-        data = evaluate_model(experiment_id=experiment,
-                              name=experiment_name,
-                              test=test_data)
+        test_results = evaluate_model(experiment_id=experiment,
+                                      name=experiment_name,
+                                      test_data=test_data)
     elif experiment_name == 'ENSEMBLE':
         run_ensemble(experiment_id=experiment,
                      dataset=train_data,
-                     verbose=verbose,
-                     params=params)
+                     verbose=verbose)
     else:
         print(get_current_time(), '- No model named ' + experiment_name + '. Skipping...')
-    return data, params_stats
+    return test_results, params_stats
 
 
-def evaluate_model(experiment_id, name, test):
-    real, predictions = test_best_model(experiment_id, test)
+def evaluate_model(experiment_id, name, test_data):
+    real, predictions = test_best_model(experiment_id, test_data)
 
-    data = pd.DataFrame(data={
-        'Date': test['Date'],
+    data_pred = pd.DataFrame(data={
+        'Date': test_data['Date'],
         'Real': real,
         'Pred': predictions
     })
-    print_test_errors(data,
+    print_test_errors(data_pred,
                       method=name)
 
-    (rmse, _, _) = eval_metrics(real, predictions)
+    (rmse_test, _, _) = eval_metrics(real, predictions)
 
-    print(get_current_time(), "- Score 15mins RMSE", name, "Test -", rmse)
+    print(get_current_time(), "- Score 15mins RMSE", name, "Test -", rmse_test)
     print(get_current_time(), "- Saved results to CSV")
 
-    data.to_csv('predictions/15mins/' + name + '_2017.csv')
+    data_pred.to_csv('predictions/15mins/' + name + '_2017.csv')
 
-    return data
+    return data_pred
 
 
 if __name__ == "__main__":
@@ -148,7 +149,7 @@ if __name__ == "__main__":
     data = load_cleaned_data()
     train, test = split_data(data)
 
-    models = []
+    models = ['MLP']
 
     if trainmodels:
         print(get_current_time(), '- Training models -', models)
@@ -158,7 +159,7 @@ if __name__ == "__main__":
                         test_data=test,
                         params=None,
                         verbose=False)
-            modify_model_info(fileName=model)
+            modify_model_info(filename=model)
     else:
         print(get_current_time(), '- Not training models -', models)
 
