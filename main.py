@@ -149,7 +149,7 @@ if __name__ == "__main__":
     data = load_cleaned_data()
     train, test = split_data(data)
 
-    models = ['MLP']
+    models = []
 
     if trainmodels:
         print(get_current_time(), '- Training models -', models)
@@ -162,8 +162,6 @@ if __name__ == "__main__":
             modify_model_info(filename=model)
     else:
         print(get_current_time(), '- Not training models -', models)
-
-    modify_model_info()
 
     models = os.listdir('predictions/15mins')
     name_models = [name.split('_')[0] for name in models]
@@ -179,21 +177,32 @@ if __name__ == "__main__":
 
     print(get_current_time(), '- RMSE on Different Models')
 
-    dict_data = {'Model': ['EN', 'KNN', 'DT', 'LGBM', 'XGB']}
+    dict_data_rmse = {'Model': ['EN', 'KNN', 'DT', 'LGBM', 'XGB']}
+    dict_data_r2 = {'Model': ['EN', 'KNN', 'DT', 'LGBM', 'XGB']}
 
     directories = os.listdir('predictions')
     for direct in directories:
-        dict_data[direct] = []
+        dict_data_rmse[direct] = []
+        dict_data_r2[direct] = []
         files = os.listdir('predictions/' + direct)
         for file in files:
             name = file.split('_')[0]
             data = pd.read_csv('predictions/' + direct + '/' + file)
-            (rmse, _, _) = eval_metrics(data['Real'], data['Pred'])
-            dict_data[direct].append(rmse / 1000.0)
+            (rmse, _, r2) = eval_metrics(data['Real'], data['Pred'])
+            dict_data_rmse[direct].append(rmse / 1000.0)
+            dict_data_r2[direct].append(r2)
 
-    data = pd.DataFrame(dict_data)
+    data = pd.DataFrame(dict_data_rmse)
     cols_sorted = ['Model', '15mins', 'daily', 'weekly', 'monthly']
     data = data[cols_sorted]
-    data.to_csv('scores/final_scores.csv',
+    data.to_csv('scores/final_scores_rmse.csv',
+                index=False)
+    print(data)
+
+    print(get_current_time(), '- R2 on Different Models')
+    data = pd.DataFrame(dict_data_r2)
+    cols_sorted = ['Model', '15mins', 'daily', 'weekly', 'monthly']
+    data = data[cols_sorted]
+    data.to_csv('scores/final_scores_r2.csv',
                 index=False)
     print(data)
