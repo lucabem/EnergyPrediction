@@ -12,7 +12,7 @@ from models.ensemble_mlflow import run_ensemble
 from models.knn_mflow import run_knn
 from models.lightgbm_mlflow import run_lgbm
 from models.xgb_mlflow import run_xgb
-from preprocess.utils import get_current_time, load_cleaned_data, split_data
+from preprocess.utils import get_current_time, load_cleaned_data, split_data, scale_data
 from utils.functions import plot_frecuencies, save_best_params, test_best_model, eval_metrics, \
     print_test_errors
 
@@ -55,7 +55,7 @@ def train_model(experiment_name, train_data, test_data, params=None, verbose=Fal
     test_results = None
     params_stats = None
 
-    if experiment_name == "ElasticNet":
+    if experiment_name == "EN":
         run_elasticnet(experiment_id=experiment,
                        dataset=train_data,
                        params=params,
@@ -147,6 +147,22 @@ if __name__ == "__main__":
     trainmodels = True
 
     data = load_cleaned_data()
+
+    data_eda = data.drop(columns=['Date'])
+    scaled_data = scale_data(data_eda,
+                             vars=data_eda.columns)
+    scaled_features_df = pd.DataFrame(scaled_data,
+                                      columns=data_eda.columns)
+
+    remove_outliers = data['VoltageAC_L1'] < 450
+    data = data[remove_outliers]
+    remove_outliers = data['VoltageAC_L1L2'] < 800
+    data = data[remove_outliers]
+    remove_outliers = data['VoltageAC_L2'] < 450
+    data = data[remove_outliers]
+    remove_outliers = data['VoltageAC_L3'] < 450
+    data = data[remove_outliers]
+
     train, test = split_data(data)
 
     models = []
@@ -177,8 +193,12 @@ if __name__ == "__main__":
 
     print(get_current_time(), '- RMSE on Different Models')
 
-    dict_data_rmse = {'Model': ['EN', 'KNN', 'DT', 'LGBM', 'XGB']}
-    dict_data_r2 = {'Model': ['EN', 'KNN', 'DT', 'LGBM', 'XGB']}
+    dict_data_rmse = {
+        'Model': ['DT', 'EN', 'KNN', 'LGBM', 'MLP', 'XGB']
+    }
+    dict_data_r2 = {
+        'Model': ['DT', 'EN', 'KNN', 'LGBM', 'MLP', 'XGB']
+    }
 
     directories = os.listdir('predictions')
     for direct in directories:
@@ -199,6 +219,7 @@ if __name__ == "__main__":
                 index=False)
     print(data)
 
+    print()
     print(get_current_time(), '- R2 on Different Models')
     data = pd.DataFrame(dict_data_r2)
     cols_sorted = ['Model', '15mins', 'daily', 'weekly', 'monthly']

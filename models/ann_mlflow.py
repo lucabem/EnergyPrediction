@@ -18,7 +18,7 @@ def run_mlp(experiment_id, dataset, params=None, verbose=False):
 
     if params is None:
         num_units_per_layer = [i for i in range(10, 110, 10)]
-        num_layers = [1, 2, 3, 4]
+        num_layers = [1, 2, 3]
         solver = ['adam']
         activation = ['relu']
         alpha = [0.00001, 0.0001, 0.001]

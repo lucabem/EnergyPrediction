@@ -15,11 +15,11 @@ def run_xgb(experiment_id, dataset, params=None, verbose=False):
     test_x = scale_data(test_x, vars=X)
 
     if params is None:
-        max_depth = [depth for depth in range(1, 11)]
-        eta = [0.0001, 0.001, 0.01, 0.1, 0.2, 0.3]
-        n_estimators = [trees for trees in range(100, 1251, 200)]
-        subsample = [0.2, 0.4, 0.8, 1]
-        colsample_bytree = [0.2, 0.4, 0.8, 1]
+        max_depth = [3, 5, 7, 10]
+        eta = [0.01, 0.1, 0.2, 0.3]
+        n_estimators = [100, 300, 500, 700, 900, 1100]
+        subsample = [0.7, 0.8, 1]
+        colsample_bytree = [0.8, 1]
         n_jobs = 10
     else:
         max_depth = params['max_depth']
