@@ -11,9 +11,6 @@ def run_lgbm(experiment_id, dataset, params=None, verbose=False):
 
     train_x, test_x, train_y, test_y = train_test(dataset)
 
-    train_x = scale_data(train_x, vars=X)
-    test_x = scale_data(test_x, vars=X)
-
     if params is None:
         num_leaves = [leave for leave in range(10, 51, 10)]
         max_depth = [depth for depth in range(1, 11)]
@@ -53,11 +50,11 @@ def run_lgbm(experiment_id, dataset, params=None, verbose=False):
 
                         mlflow.log_metric("rmse", rmse)
                         mlflow.log_metric("r2", r2)
-                        mlflow.log_metric("mae", mae)
+                        mlflow.log_metric("rmspe", mae)
 
                         if verbose:
                             print(get_current_time(), "- [num_leaves={}, max_depth={}, learning_rate={}, "
-                                                      "n_estimators={}] - [mae={:.3f}, rmse={:.3f}, "
+                                                      "n_estimators={}] - [rmspe={:.3f}, rmse={:.3f}, "
                                                       "r2={:.3f}]".format(leaves, depth, lr,
                                                                           trees, mae, rmse, r2))
 

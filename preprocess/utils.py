@@ -1,8 +1,10 @@
+from pandas import concat
+
 import pandas as pd
 import os
 from datetime import datetime
 from utils.constants import X
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 columns = ["Date",
            "ApparentPower",
@@ -109,10 +111,9 @@ def load_cleaned_data():
     return remove_zeros_rows(remove_nan_rows(dataset))
 
 
-def scale_data(dataset, vars=X):
-    scaler = StandardScaler()
-    scaler.fit(dataset[vars].values)
-    return scaler.transform(dataset[vars].values)
+def scale_data(dataset, vars=["month", "day", "hour", "t-3", "t-2", "t-1"]):
+    scaler = MinMaxScaler()
+    return scaler.fit_transform(dataset[vars].values)
 
 
 def split_data(dataset, year=2017):
@@ -121,3 +122,27 @@ def split_data(dataset, year=2017):
     start = str(year) + '-01-01'
     ended = str(year) + '-12-31'
     return data_datetime.loc[data_datetime["Date"] < start], data_datetime.loc[start:ended]
+
+
+def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
+    n_vars = 1 if type(data) is list else data.shape[1]
+    df = pd.DataFrame(data)
+    cols, names = list(), list()
+    # input sequence (t-n, ... t-1)
+    for i in range(n_in, 0, -1):
+        cols.append(df.shift(i))
+        names += [('var%d(t-%d)' % (j + 1, i)) for j in range(n_vars)]
+    # forecast sequence (t, t+1, ... t+n)
+    for i in range(0, n_out):
+        cols.append(df.shift(-i))
+        if i == 0:
+            names += [('var%d(t)' % (j + 1)) for j in range(n_vars)]
+        else:
+            names += [('var%d(t+%d)' % (j + 1, i)) for j in range(n_vars)]
+    # put it all together
+    agg = concat(cols, axis=1)
+    agg.columns = names
+    # drop rows with NaN values
+    if dropnan:
+        agg.dropna(inplace=True)
+    return agg

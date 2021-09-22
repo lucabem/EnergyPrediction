@@ -13,16 +13,13 @@ def run_mlp(experiment_id, dataset, params=None, verbose=False):
 
     train_x, test_x, train_y, test_y = train_test(dataset)
 
-    train_x = scale_data(train_x, vars=X)
-    test_x = scale_data(test_x, vars=X)
-
     if params is None:
-        num_units_per_layer = [i for i in range(10, 110, 10)]
+        num_units_per_layer = [i for i in range(20, 110, 10)]
         num_layers = [1, 2, 3]
         solver = ['adam']
         activation = ['relu']
-        alpha = [0.00001, 0.0001, 0.001]
-        learning_rate_init = [0.001, 0.01, 0.1]
+        alpha = [0.0001, 0.001]
+        learning_rate_init = [0.01, 0.1]
         random_state = 2021
     else:
         num_units_per_layer = params['num_units_per_layer']
@@ -50,7 +47,8 @@ def run_mlp(experiment_id, dataset, params=None, verbose=False):
                                                  activation=a,
                                                  alpha=al,
                                                  learning_rate_init=lri,
-                                                 random_state=random_state)
+                                                 random_state=random_state,
+                                                 early_stopping=True)
                             model.fit(train_x, train_y)
                             predicted_qualities = model.predict(test_x)
 
@@ -64,11 +62,11 @@ def run_mlp(experiment_id, dataset, params=None, verbose=False):
 
                             mlflow.log_metric("rmse", rmse)
                             mlflow.log_metric("r2", r2)
-                            mlflow.log_metric("mae", mae)
+                            mlflow.log_metric("rmspe", mae)
 
                             if verbose:
                                 print(get_current_time(), "- [hidden_layer_sizes={} , solver={}, activation={}, "
-                                                          "alpha={}, learning_rate_init={}] - [mae={:.3f}, rmse={:.3f},"
+                                                          "alpha={}, learning_rate_init={}] - [rmspe={:.3f}, rmse={:.3f},"
                                                           " r2={:.3f}]".format(layer, s, a, al,
                                                                                lri, mae, rmse, r2))
 

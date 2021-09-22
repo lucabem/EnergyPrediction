@@ -11,13 +11,10 @@ def run_xgb(experiment_id, dataset, params=None, verbose=False):
 
     train_x, test_x, train_y, test_y = train_test(dataset)
 
-    train_x = scale_data(train_x, vars=X)
-    test_x = scale_data(test_x, vars=X)
-
     if params is None:
-        max_depth = [3, 5, 7, 10]
-        eta = [0.01, 0.1, 0.2, 0.3]
-        n_estimators = [100, 300, 500, 700, 900, 1100]
+        max_depth = [3, 4, 5, 6, 7, 8, 9, 10]
+        eta = [0.01, 0.05, 0.1, 0.15, 0.3]
+        n_estimators = [100, 300, 500, 700, 900, 1000]
         subsample = [0.7, 0.8, 1]
         colsample_bytree = [0.8, 1]
         n_jobs = 10
@@ -58,13 +55,13 @@ def run_xgb(experiment_id, dataset, params=None, verbose=False):
 
                             mlflow.log_metric("rmse", rmse)
                             mlflow.log_metric("r2", r2)
-                            mlflow.log_metric("mae", mae)
+                            mlflow.log_metric("rmspe", mae)
 
                             mlflow.sklearn.log_model(model, "model")
 
                             if verbose:
                                 print(get_current_time(), "- [eta={}, max_depth={}, subsample={}, "
-                                                          "n_estimators={}, colsample_bytree={}] - [mae={:.3f}, "
+                                                          "n_estimators={}, colsample_bytree={}] - [rmspe={:.3f}, "
                                                           "rmse={:.3f}, "
                                                           "r2={:.3f}]".format(e, depth, ss, trees,
                                                                               csby, mae, rmse, r2))

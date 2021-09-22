@@ -11,13 +11,10 @@ def run_dt(experiment_id, dataset, params=None, verbose=False):
 
     train_x, test_x, train_y, test_y = train_test(dataset)
 
-    train_x = scale_data(train_x, vars=X)
-    test_x = scale_data(test_x, vars=X)
-
     if params is None:
         criterion = ['mse', 'friedman_mse']
         splitter = ['best']
-        max_depth = [i for i in range(1, 11)]
+        max_depth = [i for i in range(1, 51, 2)]
         min_samples_split = [2, 4, 8, 16, 32]
         min_samples_leaf = [1, 2, 4, 8, 16, 32]
     else:
@@ -50,7 +47,7 @@ def run_dt(experiment_id, dataset, params=None, verbose=False):
 
                             predicted_qualities = model.predict(test_x)
 
-                            (rmse, mae, r2) = eval_metrics(test_y, predicted_qualities)
+                            (rmse, rmspe, r2) = eval_metrics(test_y, predicted_qualities)
 
                             mlflow.log_params({
                                 'criterion': cr,
@@ -63,16 +60,16 @@ def run_dt(experiment_id, dataset, params=None, verbose=False):
                             mlflow.log_metrics({
                                 "rmse": rmse,
                                 "r2": r2,
-                                "mae": mae
+                                "mape": rmspe
                             })
 
                             mlflow.sklearn.log_model(model, "model")
 
                             if verbose:
                                 print(get_current_time(), "- [criterion={}, splitter={}, max_depth={},"
-                                                          " min_samples_leaf={}, min_samples_split={}] - [mae={:.3f}, rmse={:.3f},"
+                                                          " min_samples_leaf={}, min_samples_split={}] - [mape={:.3f}, rmse={:.3f},"
                                                           " r2={:.3f}]".format(cr, spl, depth, msl,
-                                                                               mss, mae, rmse, r2))
+                                                                               mss, rmspe, rmse, r2))
 
                             cont += 1
 

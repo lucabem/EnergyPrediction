@@ -1,6 +1,6 @@
 import mlflow
 import numpy as np
-from sklearn.linear_model import ElasticNet
+from sklearn.linear_model import ElasticNet, PoissonRegressor
 
 from preprocess.utils import get_current_time, scale_data
 from utils.constants import X
@@ -12,11 +12,8 @@ def run_elasticnet(experiment_id, dataset, params=None, verbose=False):
 
     train_x, test_x, train_y, test_y = train_test(dataset)
 
-    train_x = scale_data(train_x, vars=X)
-    test_x = scale_data(test_x, vars=X)
-
     if params is None:
-        alphas = [i for i in np.arange(0, 1.05, 0.5)]
+        alphas = [i for i in np.arange(0, 1.05, 0.05)]
         l1_ratios = [i for i in np.arange(0, 1.05, 0.05)]
     else:
         alphas = params['alphas']
@@ -42,12 +39,12 @@ def run_elasticnet(experiment_id, dataset, params=None, verbose=False):
 
                 mlflow.log_metric("rmse", rmse)
                 mlflow.log_metric("r2", r2)
-                mlflow.log_metric("mae", mae)
+                mlflow.log_metric("mape", mae)
 
                 mlflow.sklearn.log_model(lr, "model")
 
                 if verbose:
-                    print(get_current_time(), "- [alpha={:.2f}, l1_ratio={:.2f}] - [mae={:.3f}, rmse={:.3f},"
+                    print(get_current_time(), "- [alpha={:.2f}, l1_ratio={:.2f}] - [MAPE={:.3f}, rmse={:.3f},"
                                               " r2={:.3f}]".format(alpha, l1_ratio, mae, rmse, r2))
 
     print(get_current_time(), "- Ended ElasticNet Model...")

@@ -12,11 +12,8 @@ def run_knn(experiment_id, dataset, params=None, verbose=False):
 
     train_x, test_x, train_y, test_y = train_test(dataset)
 
-    train_x = scale_data(train_x, vars=X)
-    test_x = scale_data(test_x, vars=X)
-
     if params is None:
-        n_neighbors = [i for i in np.arange(3, 40, 1)]
+        n_neighbors = [i for i in np.arange(2, 40, 1)]
         weights = ['uniform', 'distance']
     else:
         n_neighbors = params['n_neighbors']
@@ -36,17 +33,17 @@ def run_knn(experiment_id, dataset, params=None, verbose=False):
 
                 predicted_qualities = model.predict(test_x)
 
-                (rmse, mae, r2) = eval_metrics(test_y, predicted_qualities)
+                (rmse, mae, r2) = eval_metrics(test_y, predicted_qualities.reshape(-1))
 
                 mlflow.log_param("n_neighbor", n_neighbor)
                 mlflow.log_param("weight", weight)
 
                 mlflow.log_metric("rmse", rmse)
                 mlflow.log_metric("r2", r2)
-                mlflow.log_metric("mae", mae)
+                mlflow.log_metric("mape", mae)
 
                 if verbose:
-                    print(get_current_time(), "- [n_neighbor={}, weight={}] - [mae={:.3f}, rmse={:.3f},"
+                    print(get_current_time(), "- [n_neighbor={}, weight={}] - [mape={:.3f}, rmse={:.3f},"
                                               " r2={:.3f}]".format(n_neighbor, weight, mae, rmse, r2))
 
                 mlflow.sklearn.log_model(model, "model")

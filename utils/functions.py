@@ -5,6 +5,7 @@ import pandas as pd
 from mlflow.tracking import MlflowClient
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split, RepeatedKFold
+from sklearn.preprocessing import MinMaxScaler
 
 from preprocess.utils import scale_data, get_current_time, split_data
 from utils.constants import X
@@ -12,6 +13,9 @@ from utils.constants import X
 
 def plot_frecuencies(data, method):
     data['Date'] = pd.to_datetime(data['Date'])
+
+    print_test_errors(data=data,
+                      method=method)
 
     daily_sum = data.groupby(pd.Grouper(key='Date',
                                         freq='1D')).sum()
@@ -54,30 +58,34 @@ def print_test_errors(data, method, frecuency='15mins'):
     plt.close()
 
 
-def test_best_model(experiment_id, test_data, label_column='PV_Production'):
-    test_data = test_data.drop(columns=['Energy', 'Date'])
+def test_best_model(experiment_id, test_data, label_column='t', scaler=None):
+    test_data = test_data.drop(columns=['Date'])
 
-    df = mlflow.search_runs(experiment_ids=[experiment_id],
-                            filter_string="metrics.rmse < 400")
+    df = mlflow.search_runs(experiment_ids=[experiment_id])
 
     run_id = df.loc[df['metrics.rmse'].idxmin()]['run_id']
     model = mlflow.sklearn.load_model("runs:/" + run_id + "/model")
 
-    test_x = test_data[X]
-    test_y = test_data[label_column]
+    test_x = test_data[['month_sin', 'month_cos',
+                        'day_sin', 'day_cos',
+                        'hour_sin', 'hour_cos',
+                        't-3', 't-2', 't-1']]
 
-    test_data_scaled = scale_data(test_x)
+    test_y = test_data[label_column]
 
     print(get_current_time(), "- Making predictions for test data...")
 
-    return test_y.values, model.predict(test_data_scaled).reshape(-1)
+    yhat = model.predict(test_x).reshape(-1, 1).reshape(-1)
+    y = test_y.values.reshape(-1, 1).reshape(-1)
+
+    return y, yhat
 
 
-def train_test(dataset, label_column='PV_Production'):
+def train_test(dataset, label_column='t'):
     train, test = split_data(dataset, year=2016)
 
-    train = train.drop(columns=['Energy', 'Date'])
-    test  = test.drop(columns=['Energy', 'Date'])
+    train = train.drop(columns=['Date'])
+    test = test.drop(columns=['Date'])
 
     train_values = train.drop(columns=[label_column])
     test_values = test.drop(columns=[label_column])
@@ -89,7 +97,7 @@ def train_test(dataset, label_column='PV_Production'):
 
 def eval_metrics(actual, pred):
     return np.sqrt(mean_squared_error(actual, pred)), \
-           mean_absolute_error(actual, pred), \
+           np.mean(np.abs((actual - pred))), \
            r2_score(actual, pred)
 
 
@@ -126,7 +134,7 @@ def save_best_params(experiment_id, nrows=20):
     client = MlflowClient()
     data = mlflow.search_runs(experiment_ids=[experiment_id],
                               max_results=nrows,
-                              order_by=['metric.rmse ASC'])
+                              order_by=['metric.r2 DESC'])
     name = client.get_experiment(experiment_id).name
     df = pd.DataFrame(data=data)
     df.to_csv("modelInfo/" + name + '.csv')
